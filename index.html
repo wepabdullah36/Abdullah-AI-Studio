@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abdullah AI Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .tool-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tool-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .tool-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .slider-container input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+        
+        .canvas-area {
+            background-image: 
+                linear-gradient(45deg, #1a1a2e 25%, transparent 25%),
+                linear-gradient(-45deg, #1a1a2e 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #1a1a2e 75%),
+                linear-gradient(-45deg, transparent 75%, #1a1a2e 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            background-color: #0f0f1a;
+        }
+        
+        .filter-chip {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .filter-chip:hover {
+            transform: scale(1.05);
+        }
+        
+        .filter-chip.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: transparent;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .glow {
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .history-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .history-item:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+        
+        .drop-zone {
+            border: 2px dashed rgba(102, 126, 234, 0.5);
+            transition: all 0.3s;
+        }
+        
+        .drop-zone.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        ::-webkit-scrollbar-thumb { background: rgba(102, 126, 234, 0.5); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #667eea; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+    <!-- Top Bar -->
+    <header class="glass border-b border-white/10 px-4 py-3 flex items-center justify-between z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
+                <i class="fas fa-wand-magic-sparkles text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Abdullah AI Studio</h1>
+                <p class="text-xs text-gray-400">AI-Powered Image Editor</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <button onclick="undo()" class="tool-btn p-2 rounded-lg bg-white/5 hover:bg-white/10" title="Undo (Ctrl+Z)">
+                <i class="fas fa-undo"></i>
+            </button>
+            <button onclick="redo()" class="tool-btn p-2 rounded-lg bg-white/5 hover:bg-white/10" title="Redo (Ctrl+Y)">
+                <i class="fas fa-redo"></i>
+            </button>
+            <button onclick="resetImage()" class="tool-btn p-2 rounded-lg bg-white/5 hover:bg-white/10" title="Reset">
+                <i class="fas fa-rotate-left"></i>
+            </button>
+            <div class="w-px h-6 bg-white/10 mx-1"></div>
+            <button onclick="downloadImage()" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
+                <i class="fas fa-download"></i> Download
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Left Sidebar - Tools -->
+        <aside class="w-16 glass border-r border-white/10 flex flex-col items-center py-4 gap-2">
+            <button onclick="setActiveTool('home')" class="tool-btn active w-12 h-12 rounded-xl flex items-center justify-center" data-tool="home" title="Home">
+                <i class="fas fa-home"></i>
+            </button>
+            <button onclick="setActiveTool('adjust')" class="tool-btn w-12 h-12 rounded-xl flex items-center justify-center" data-tool="adjust" title="Adjust">
+                <i class="fas fa-sliders"></i>
+            </button>
+            <button onclick="setActiveTool('filters')" class="tool-btn w-12 h-12 rounded-xl flex items-center justify-center" data-tool="filters" title="Filters">
+                <i class="fas fa-magic"></i>
+            </button>
+            <button onclick="setActiveTool('crop')" class="tool-btn w-12 h-12 rounded-xl flex items-center justify-center" data-tool="crop" title="Crop & Rotate">
+                <i class="fas fa-crop-simple"></i>
+            </button>
+            <button onclick="setActiveTool('text')" class="tool-btn w-12 h-12 rounded-xl flex items-center justify-center" data-tool="text" title="Add Text">
+                <i class="fas fa-font"></i>
+            </button>
+            <button onclick="setActiveTool('draw')" class="tool-btn w-12 h-12 rounded-xl flex items-center justify-center" data-tool="draw" title="Draw">
+                <i class="fas fa-pen"></i>
+            </button>
+            <button onclick="setActiveTool('ai')" class="tool-btn w-12 h-12 rounded-xl flex items-center justify-center" data-tool="ai" title="AI Tools">
+                <i class="fas fa-robot"></i>
+            </button>
+            <div class="flex-1"></div>
+            <button onclick="document.getElementById('fileInput').click()" class="tool-btn w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center" title="Upload">
+                <i class="fas fa-cloud-arrow-up"></i>
+            </button>
+        </aside>
+
+        <!-- Tool Panel -->
+        <aside class="w-72 glass border-r border-white/10 overflow-y-auto p-4">
+            
+            <!-- HOME Tab -->
+            <div id="tab-home" class="tab-content active">
+                <h2 class="text-lg font-bold mb-4">Welcome 👋</h2>
+                <p class="text-sm text-gray-400 mb-6">Upload an image to start editing with AI-powered tools</p>
+                
+                <div id="dropZone" class="drop-zone rounded-2xl p-6 text-center cursor-pointer mb-4" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-cloud-arrow-up text-4xl text-purple-400 mb-3"></i>
+                    <p class="font-semibold mb-1">Drop image here</p>
+                    <p class="text-xs text-gray-400">or click to browse</p>
+                    <p class="text-xs text-gray-500 mt-2">JPG, PNG, WEBP</p>
+                </div>
+                
+                <div class="glass rounded-xl p-3 mb-3">
+                    <p class="text-xs text-gray-400 mb-2">QUICK ACTIONS</p>
+                    <button onclick="document.getElementById('fileInput').click()" class="w-full text-left p-2 rounded-lg hover:bg-white/5 flex items-center gap-2 text-sm">
+                        <i class="fas fa-folder-open text-purple-400 w-4"></i> Open from device
+                    </button>
+                    <button onclick="loadSampleImage('landscape')" class="w-full text-left p-2 rounded-lg hover:bg-white/5 flex items-center gap-2 text-sm">
+                        <i class="fas fa-image text-pink-400 w-4"></i> Sample landscape
+                    </button>
+                    <button onclick="loadSampleImage('portrait')" class="w-full text-left p-2 rounded-lg hover:bg-white/5 flex items-center gap-2 text-sm">
+                        <i class="fas fa-user text-blue-400 w-4"></i> Sample portrait
+                    </button>
+                </div>
+
+                <div class="glass rounded-xl p-3">
+                    <p class="text-xs text-gray-400 mb-2">KEYBOARD SHORTCUTS</p>
+                    <div class="space-y-1 text-xs text-gray-300">
+                        <div class="flex justify-between"><span>Upload</span><span class="text-gray-500">Ctrl+O</span></div>
+                        <div class="flex justify-between"><span>Download</span><span class="text-gray-500">Ctrl+S</span></div>
+                        <div class="flex justify-between"><span>Undo</span><span class="text-gray-500">Ctrl+Z</span></div>
+                        <div class="flex justify-between"><span>Redo</span><span class="text-gray-500">Ctrl+Y</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADJUST Tab -->
+            <div id="tab-adjust" class="tab-content">
+                <h2 class="text-lg font-bold mb-1">Adjustments</h2>
+                <p class="text-xs text-gray-400 mb-4">Fine-tune your image</p>
+                
+                <div class="space-y-4">
+                    <div class="slider-container">
+                        <div class="flex justify-between text-xs mb-1">
+                            <label>Brightness</label>
+                            <span id="brightnessVal" class="text-purple-400">100%</span>
+                        </div>
+                        <input type="range" min="0" max="200" value="100" oninput="updateAdjust('brightness', this.value)">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="flex justify-between text-xs mb-1">
+                            <label>Contrast</label>
+                            <span id="contrastVal" class="text-purple-400">100%</span>
+                        </div>
+                        <input type="range" min="0" max="200" value="100" oninput="updateAdjust('contrast', this.value)">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="flex justify-between text-xs mb-1">
+                            <label>Saturation</label>
+                            <span id="saturationVal" class="text-purple-400">100%</span>
+                        </div>
+                        <input type="range" min="0" max="200" value="100" oninput="updateAdjust('saturation', this.value)">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="flex justify-between text-xs mb-1">
+                            <label>Hue Rotate</label>
+                            <span id="hueVal" class="text-purple-400">0°</span>
+                        </div>
+                        <input type="range" min="0" max="360" value="0" oninput="updateAdjust('hue', this.value)">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="flex justify-between text-xs mb-1">
+                            <label>Blur</label>
+                            <span id="blurVal" class="text-purple-400">0px</span>
+                        </div>
+                        <input type="range" min="0" max="20" value="0" oninput="updateAdjust('blur', this.value)">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="flex justify-between text-xs mb-1">
+                            <label>Sepia</label>
+                            <span id="sepiaVal" class="text-purple-400">0%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="0" oninput="updateAdjust('sepia', this.value)">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="flex justify-between text-xs mb-1">
+                            <label>Grayscale</label>
+                            <span id="grayscaleVal" class="text-purple-400">0%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="0" oninput="updateAdjust('grayscale', this.value)">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="flex justify-between text-xs mb-1">
+                            <label>Invert</label>
+                            <span id="invertVal" class="text-purple-400">0%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="0" oninput="updateAdjust('invert', this.value)">
+                    </div>
+                    
+                    <button onclick="resetAdjustments()" class="w-full p-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm">
+                        <i class="fas fa-rotate-left mr-2"></i>Reset Adjustments
+                    </button>
+                </div>
+            </div>
+
+            <!-- FILTERS Tab -->
+            <div id="tab-filters" class="tab-content">
+                <h2 class="text-lg font-bold mb-1">AI Filters</h2>
+                <p class="text-xs text-gray-400 mb-4">One-click magic</p>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div onclick="applyPreset('none')" class="filter-chip glass rounded-xl p-3 text-center">
+                        <div class="w-full h-12 rounded-lg mb-1" style="background: linear-gradient(45deg, #ccc, #999)"></div>
+                        <p class="text-xs">Original</p>
+                    </div>
+                    <div onclick="applyPreset('vintage')" class="filter-chip glass rounded-xl p-3 text-center">
+                        <div class="w-full h-12 rounded-lg mb-1" style="background: linear-gradient(45deg, #d4a574, #8b6f47)"></div>
+                        <p class="text-xs">Vintage</p>
+                    </div>
+                    <div onclick="applyPreset('cinematic')" class="filter-chip glass rounded-xl p-3 text-center">
+                        <div class="w-full h-12 rounded-lg mb-1" style="background: linear-gradient(45deg, #2c3e50, #e74c3c)"></div>
+                        <p class="text-xs">Cinematic</p>
+                    </div>
+                    <div onclick="applyPreset('warm')" class="filter-chip glass rounded-xl p-3 text-center">
+                        <div class="w-full h-12 rounded-lg mb-1" style="background: linear-gradient(45deg, #ff9a8b, #ff6a88)"></div>
+                        <p class="text-xs">Warm</p>
+                    </div>
+                    <div onclick="applyPreset('cool')" class="filter-chip glass rounded-xl p-3 text-center">
+                        <div class="w-full h-12 rounded-lg mb-1" style="background: linear-gradient(45deg, #4facfe, #00f2fe)"></div>
+                        <p class="text-xs">Cool</p>
+                    </div>
+                    <div onclick="applyPreset('noir')" class="filter-chip glass rounded-xl p-3 text-center">
+                        <div class="w-full h-12 rounded-lg mb-1" style="background: linear-gradient(45deg, #232526, #414345)"></div>
+                        <p class="text-xs">Noir</p>
+                    </div>
+                    <div onclick="applyPreset('vivid')" class="filter-chip glass rounded-xl p-3 text-center">
+                        <div class="w-full h-12 rounded-lg mb-1" style="background: linear-gradient(45deg, #fa709a, #fee140)"></div>
+                        <p class="text-xs">Vivid</p>
+                    </div>
+                    <div onclick="applyPreset('dream')" class="filter-chip glass rounded-xl p-3 text-center">
+                        <div class="w-full h-12 rounded-lg mb-1" style="background: linear-gradient(45deg, #a8edea, #fed6e3)"></div>
+                        <p class="text-xs">Dream</p>
+                    </div>
+                    <div onclick="applyPreset('dramatic')" class="filter-chip glass rounded-xl p-3 text-center">
+                        <div class="w-full h-12 rounded-lg mb-1" style="background: linear-gradient(45deg, #1a1a1a, #ff4500)"></div>
+                        <p class="text-xs">Dramatic</p>
+                    </div>
+                    <div onclick="applyPreset('sunset')" class="filter-chip glass rounded-xl p-3 text-center">
+                        <div class="w-full h-12 rounded-lg mb-1" style="background: linear-gradient(45deg, #ff7e5f, #feb47b)"></div>
+                        <p class="text-xs">Sunset</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CROP Tab -->
+            <div id="tab-crop" class="tab-content">
+                <h2 class="text-lg font-bold mb-1">Crop & Rotate</h2>
+                <p class="text-xs text-gray-400 mb-4">Transform your image</p>
+                
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-xs text-gray-400 mb-2">ROTATE</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="rotateImage(-90)" class="p-3 rounded-lg bg-white/5 hover:bg-white/10 text-sm">
+                                <i class="fas fa-rotate-left mr-1"></i> Left
+                            </button>
+                            <button onclick="rotateImage(90)" class="p-3 rounded-lg bg-white/5 hover:bg-white/10 text-sm">
+                                <i class="fas fa-rotate-right mr-1"></i> Right
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <p class="text-xs text-gray-400 mb-2">FLIP</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="flipImage('horizontal')" class="p-3 rounded-lg bg-white/5 hover:bg-white/10 text-sm">
+                                <i class="fas fa-arrows-left-right mr-1"></i> H
+                            </button>
+                            <button onclick="flipImage('vertical')" class="p-3 rounded-lg bg-white/5 hover:bg-white/10 text-sm">
+                                <i class="fas fa-arrows-up-down mr-1"></i> V
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <p class="text-xs text-gray-400 mb-2">ASPECT RATIO</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="setAspect(1)" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs">1:1</button>
+                            <button onclick="setAspect(4/3)" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs">4:3</button>
+                            <button onclick="setAspect(16/9)" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs">16:9</button>
+                            <button onclick="setAspect(3/2)" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs">3:2</button>
+                            <button onclick="setAspect(9/16)" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs">9:16</button>
+                            <button onclick="setAspect(0)" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs">Free</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <p class="text-xs text-gray-400 mb-2">RESIZE</p>
+                        <div class="flex gap-2">
+                            <input type="number" id="resizeW" placeholder="W" class="flex-1 p-2 rounded-lg bg-white/5 text-sm border border-white/10">
+                            <input type="number" id="resizeH" placeholder="H" class="flex-1 p-2 rounded-lg bg-white/5 text-sm border border-white/10">
+                        </div>
+                        <button onclick="resizeImage()" class="w-full mt-2 p-2 rounded-lg btn-primary text-sm font-semibold">Apply</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEXT Tab -->
+            <div id="tab-text" class="tab-content">
+                <h2 class="text-lg font-bold mb-1">Add Text</h2>
+                <p class="text-xs text-gray-400 mb-4">Add stylish text to image</p>
+                
+                <div class="space-y-3">
+                    <input type="text" id="textInput" placeholder="Type your text..." class="w-full p-2 rounded-lg bg-white/5 border border-white/10 text-sm" value="Your Text">
+                    
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Font Size</p>
+                        <input type="range" id="fontSize" min="10" max="120" value="48" class="w-full">
+                    </div>
+                    
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Color</p>
+                        <div class="flex gap-2">
+                            <input type="color" id="textColor" value="#ffffff" class="w-12 h-10 rounded cursor-pointer">
+                            <input type="text" id="textColorHex" value="#FFFFFF" class="flex-1 p-2 rounded-lg bg-white/5 border border-white/10 text-sm" onchange="document.getElementById('textColor').value=this.value">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Font Family</p>
+                        <select id="fontFamily" class="w-full p-2 rounded-lg bg-white/5 border border-white/10 text-sm">
+                            <option value="Arial">Arial</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Impact">Impact</option>
+                            <option value="Comic Sans MS">Comic Sans</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Style</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="setTextStyle('bold')" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm font-bold">B</button>
+                            <button onclick="setTextStyle('italic')" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm italic">I</button>
+                            <button onclick="setTextStyle('underline')" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm underline">U</button>
+                        </div>
+                    </div>
+                    
+                    <button onclick="addText()" class="w-full p-2 rounded-lg btn-primary text-sm font-semibold">
+                        <i class="fas fa-plus mr-1"></i> Add Text
+                    </button>
+                </div>
+            </div>
+
+            <!-- DRAW Tab -->
+            <div id="tab-draw" class="tab-content">
+                <h2 class="text-lg font-bold mb-1">Draw</h2>
+                <p class="text-xs text-gray-400 mb-4">Freehand drawing</p>
+                
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">Brush Color</p>
+                        <div class="flex gap-2">
+                            <input type="color" id="brushColor" value="#ff0000" class="w-12 h-10 rounded cursor-pointer">
+                            <div class="grid grid-cols-6 gap-1 flex-1">
+                                <div onclick="setBrushColor('#ff0000')" class="w-full h-5 rounded" style="background:#ff0000"></div>
+                                <div onclick="setBrushColor('#00ff00')" class="w-full h-5 rounded" style="background:#00ff00"></div>
+                                <div onclick="setBrushColor('#0000ff')" class="w-full h-5 rounded" style="background:#0000ff"></div>
+                                <div onclick="setBrushColor('#ffff00')" class="w-full h-5 rounded" style="background:#ffff00"></div>
+                                <div onclick="setBrushColor('#ffffff')" class="w-full h-5 rounded border border-white/30" style="background:#ffffff"></div>
+                                <div onclick="setBrushColor('#000000')" class="w-full h-5 rounded" style="background:#000000"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <p class="flex justify-between text-xs mb-1">
+                            <span class="text-gray-400">Brush Size</span>
+                            <span id="brushSizeVal" class="text-purple-400">5px</span>
+                        </p>
+                        <input type="range" id="brushSize" min="1" max="50" value="5" oninput="document.getElementById('brushSizeVal').textContent=this.value+'px'">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="toggleDraw()" class="p-2 rounded-lg btn-primary text-sm font-semibold">
+                            <i class="fas fa-pen mr-1"></i> Start
+                        </button>
+                        <button onclick="clearCanvas()" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm">
+                            <i class="fas fa-eraser mr-1"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Tab -->
+            <div id="tab-ai" class="tab-content">
+                <h2 class="text-lg font-bold mb-1">✨ AI Tools</h2>
+                <p class="text-xs text-gray-400 mb-4">Smart features</p>
+                
+                <div class="space-y-2">
+                    <button onclick="aiEnhance('auto')" class="w-full p-3 rounded-xl glass hover:bg-white/10 text-left flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg gradient-bg flex items-center justify-center">
+                            <i class="fas fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold">Auto Enhance</p>
+                            <p class="text-xs text-gray-400">AI magic in 1-click</p>
+                        </div>
+                    </button>
+                    
+                    <button onclick="aiEnhance('bright')" class="w-full p-3 rounded-xl glass hover:bg-white/10 text-left flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-400">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold">Bright Boost</p>
+                            <p class="text-xs text-gray-400">For dark photos</p>
+                        </div>
+                    </button>
+                    
+                    <button onclick="aiEnhance('vivid')" class="w-full p-3 rounded-xl glass hover:bg-white/10 text-left flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center text-pink-400">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold">Color Pop</p>
+                            <p class="text-xs text-gray-400">Vibrant colors</p>
+                        </div>
+                    </button>
+                    
+                    <button onclick="aiEnhance('sharp')" class="w-full p-3 rounded-xl glass hover:bg-white/10 text-left flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold">Sharp & Clear</p>
+                            <p class="text-xs text-gray-400">Reduce blur</p>
+                        </div>
+                    </button>
+                    
+                    <button onclick="aiEnhance('bw')" class="w-full p-3 rounded-xl glass hover:bg-white/10 text-left flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gray-500/20 flex items-center justify-center text-gray-300">
+                            <i class="fas fa-circle-half-stroke"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold">B&W Pro</p>
+                            <p class="text-xs text-gray-400">Classic mono</p>
+                        </div>
+                    </button>
+                    
+                    <button onclick="aiEnhance('warm')" class="w-full p-3 rounded-xl glass hover:bg-white/10 text-left flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold">Warm Glow</p>
+                            <p class="text-xs text-gray-400">Golden hour feel</p>
+                        </div>
+                    </button>
+                    
+                    <button onclick="aiEnhance('cool')" class="w-full p-3 rounded-xl glass hover:bg-white/10 text-left flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400">
+                            <i class="fas fa-snowflake"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold">Cool Breeze</p>
+                            <p class="text-xs text-gray-400">Cool tones</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Canvas Area -->
+        <main class="flex-1 flex flex-col">
+            <div class="flex-1 canvas-area flex items-center justify-center p-4 relative overflow-hidden">
+                <div id="canvasContainer" class="relative max-w-full max-h-full flex items-center justify-center">
+                    <div id="placeholder" class="text-center p-12">
+                        <i class="fas fa-image text-6xl text-gray-700 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-gray-500 mb-2">No Image Loaded</h2>
+                        <p class="text-gray-600 mb-6">Upload an image or choose a sample to start editing</p>
+                        <button onclick="document.getElementById('fileInput').click()" class="btn-primary px-6 py-3 rounded-xl font-semibold">
+                            <i class="fas fa-upload mr-2"></i> Upload Image
+                        </button>
+                    </div>
+                    <canvas id="canvas" class="hidden max-w-full max-h-full rounded-lg shadow-2xl"></canvas>
+                </div>
+                
+                <!-- Loading Overlay -->
+                <div id="loadingOverlay" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center flex-col gap-3 z-50">
+                    <div class="loading-spinner"></div>
+                    <p class="text-sm text-gray-300" id="loadingText">Processing with AI...</p>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar - Zoom & Info -->
+            <div class="glass border-t border-white/10 px-4 py-2 flex items-center justify-between text-sm">
+                <div class="flex items-center gap-3 text-gray-400">
+                    <span id="imageInfo">No image</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="zoom(-0.1)" class="p-2 rounded-lg bg-white/5 hover:bg-white/10">
+                        <i class="fas fa-minus text-xs"></i>
+                    </button>
+                    <span id="zoomLevel" class="text-xs w-12 text-center">100%</span>
+                    <button onclick="zoom(0.1)" class="p-2 rounded-lg bg-white/5 hover:bg-white/10">
+                        <i class="fas fa-plus text-xs"></i>
+                    </button>
+                    <button onclick="setZoom(1)" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs px-3">Fit</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <input type="file" id="fileInput" accept="image/*" class="hidden">
+
+    <script>
+        // State
+        const state = {
+            originalImage: null,
+            currentImage: null,
+            history: [],
+            historyIndex: -1,
+            adjustments: {
+                brightness: 100,
+                contrast: 100,
+                saturation: 100,
+                hue: 0,
+                blur: 0,
+                sepia: 0,
+                grayscale: 0,
+                invert: 0
+            },
+            zoom: 1,
+            drawing: false,
+            textStyle: { bold: false, italic: false, underline: false }
+        };
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const placeholder = document.getElementById('placeholder');
+        const fileInput = document.getElementById('fileInput');
+
+        // File handling
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) loadImage(file);
+        });
+
+        // Drag and drop
+        const dropZone = document.getElementById('dropZone');
+        document.body.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        document.body.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        document.body.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) loadImage(file);
+        });
+
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    state.originalImage = img;
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    placeholder.classList.add('hidden');
+                    canvas.classList.remove('hidden');
+                    state.history = [];
+                    state.historyIndex = -1;
+                    state.adjustments = { brightness: 100, contrast: 100, saturation: 100, hue: 0, blur: 0, sepia: 0, grayscale: 0, invert: 0 };
+                    applyAdjustments();
+                    saveHistory();
+                    updateInfo();
+                    showToast('Image loaded successfully!', 'success');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function loadSampleImage(type) {
+            let url;
+            if (type === 'landscape') {
+                url = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200';
+            } else {
+                url = 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=800';
+            }
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                state.originalImage = img;
+                canvas.width = img.width;
+                canvas.height = img.height;
+                placeholder.classList.add('hidden');
+                canvas.classList.remove('hidden');
+                state.history = [];
+                state.historyIndex = -1;
+                state.adjustments = { brightness: 100, contrast: 100, saturation: 100, hue: 0, blur: 0, sepia: 0, grayscale: 0, invert: 0 };
+                applyAdjustments();
+                saveHistory();
+                updateInfo();
+                showToast('Sample image loaded!', 'success');
+            };
+            img.onerror = () => {
+                // Fallback to a generated image
+                generateSampleImage(type);
+            };
+            img.src = url;
+        }
+
+        function generateSampleImage(type) {
+            canvas.width = 1200;
+            canvas.height = type === 'landscape' ? 800 : 1000;
+            placeholder.classList.add('hidden');
+            canvas.classList.remove('hidden');
+            
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            if (type === 'landscape') {
+                gradient.addColorStop(0, '#ff9966');
+                gradient.addColorStop(0.5, '#ff5e62');
+                gradient.addColorStop(1, '#ffa17f');
+            } else {
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+            }
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Add some shapes
+            for (let i = 0; i < 50; i++) {
+                ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.3})`;
+                ctx.beginPath();
+                ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 50, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            const dataUrl = canvas.toDataURL();
+            const img = new Image();
+            img.onload = () => {
+                state.originalImage = img;
+                state.history = [];
+                state.historyIndex = -1;
+                state.adjustments = { brightness: 100, contrast: 100, saturation: 100, hue: 0, blur: 0, sepia: 0, grayscale: 0, invert: 0 };
+                applyAdjustments();
+                saveHistory();
+                updateInfo();
+                showToast('Sample image loaded!', 'success');
+            };
+            img.src = dataUrl;
+        }
+
+        // Apply adjustments using CSS filter
+        function applyAdjustments() {
+            if (!state.originalImage) return;
+            const a = state.adjustments;
+            const filter = `brightness(${a.brightness}%) contrast(${a.contrast}%) saturate(${a.saturation}%) hue-rotate(${a.hue}deg) blur(${a.blur}px) sepia(${a.sepia}%) grayscale(${a.grayscale}%) invert(${a.invert}%)`;
+            ctx.filter = filter;
+            ctx.drawImage(state.originalImage, 0, 0);
+            ctx.filter = 'none';
+        }
+
+        function updateAdjust(key, value) {
+            state.adjustments[key] = parseInt(value);
+            document.getElementById(key + 'Val').textContent = value + (key === 'hue' ? '°' : key === 'blur' ? 'px' : '%');
+            applyAdjustments();
+        }
+
+        function resetAdjustments() {
+            state.adjustments = { brightness: 100, contrast: 100, saturation: 100, hue: 0, blur: 0, sepia: 0, grayscale: 0, invert: 0 };
+            document.querySelectorAll('#tab-adjust input[type="range"]').forEach(s => s.value = 100);
+            document.getElementById('brightnessVal').textContent = '100%';
+            document.getElementById('contrastVal').textContent = '100%';
+            document.getElementById('saturationVal').textContent = '100%';
+            document.getElementById('hueVal').textContent = '0°';
+            document.getElementById('blurVal').textContent = '0px';
+            document.getElementById('sepiaVal').textContent = '0%';
+            document.getElementById('grayscaleVal').textContent = '0%';
+            document.getElementById('invertVal').textContent = '0%';
+            document.getElementById('hue').value = 0;
+            document.getElementById('blur').value = 0;
+            applyAdjustments();
+        }
+
+        // Presets
+        function applyPreset(preset) {
+            const presets = {
+                none: { brightness: 100, contrast: 100, saturation: 100, hue: 0, blur: 0, sepia: 0, grayscale: 0, invert: 0 },
+                vintage: { brightness: 105, contrast: 90, saturation: 80, hue: 350, blur: 0, sepia: 40, grayscale: 0, invert: 0 },
+                cinematic: { brightness: 95, contrast: 130, saturation: 110, hue: 0, blur: 0, sepia: 20, grayscale: 0, invert: 0 },
+                warm: { brightness: 110, contrast: 105, saturation: 130, hue: 15, blur: 0, sepia: 20, grayscale: 0, invert: 0 },
+                cool: { brightness: 100, contrast: 110, saturation: 120, hue: 200, blur: 0, sepia: 0, grayscale: 0, invert: 0 },
+                noir: { brightness: 100, contrast: 150, saturation: 0, hue: 0, blur: 0, sepia: 0, grayscale: 100, invert: 0 },
+                vivid: { brightness: 105, contrast: 120, saturation: 160, hue: 0, blur: 0, sepia: 0, grayscale: 0, invert: 0 },
+                dream: { brightness: 115, contrast: 90, saturation: 110, hue: 300, blur: 2, sepia: 0, grayscale: 0, invert: 0 },
+                dramatic: { brightness: 90, contrast: 140, saturation: 120, hue: 350, blur: 0, sepia: 10, grayscale: 20, invert: 0 },
+                sunset: { brightness: 110, contrast: 115, saturation: 130, hue: 20, blur: 0, sepia: 30, grayscale: 0, invert: 0 }
+            };
+            state.adjustments = {...presets[preset]};
+            applyAdjustments();
+            showToast(`✨ ${preset} filter applied!`, 'success');
+        }
+
+        // AI Enhancement
+        function aiEnhance(type) {
+            showLoading(true);
+            setTimeout(() => {
+                const presets = {
+                    auto: { brightness: 110, contrast: 115, saturation: 120, hue: 0, blur: 0, sepia: 5, grayscale: 0, invert: 0 },
+                    bright: { brightness: 130, contrast: 105, saturation: 110, hue: 0, blur: 0, sepia: 0, grayscale: 0, invert: 0 },
+                    vivid: { brightness: 105, contrast: 120, saturation: 150, hue: 0, blur: 0, sepia: 0, grayscale: 0, invert: 0 },
+                    sharp: { brightness: 100, contrast: 140, saturation: 100, hue: 0, blur: 0, sepia: 0, grayscale: 0, invert: 0 },
+                    bw: { brightness: 105, contrast: 120, saturation: 0, hue: 0, blur: 0, sepia: 0, grayscale: 100, invert: 0 },
+                    warm: { brightness: 108, contrast: 108, saturation: 120, hue: 18, blur: 0, sepia: 15, grayscale: 0, invert: 0 },
+                    cool: { brightness: 102, contrast: 108, saturation: 115, hue: 200, blur: 0, sepia: 0, grayscale: 0, invert: 0 }
+                };
+                state.adjustments = {...presets[type]};
+                applyAdjustments();
+                saveHistory();
+                showLoading(false);
+                showToast(`🤖 AI ${type} enhance done!`, 'success');
+            }, 1500);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+        }
+
+        // Rotation & Flip
+        function rotateImage(deg) {
+            if (!state.originalImage) return;
+            showLoading(true);
+            setTimeout(() => {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.height;
+                tempCanvas.height = canvas.width;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+                tempCtx.rotate(deg * Math.PI / 180);
+                tempCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+                
+                canvas.width = tempCanvas.width;
+                canvas.height = tempCanvas.height;
+                ctx.drawImage(tempCanvas, 0, 0);
+                
+                const newImg = new Image();
+                newImg.onload = () => {
+                    state.originalImage = newImg;
+                    applyAdjustments();
+                    saveHistory();
+                    updateInfo();
+                    showLoading(false);
+                    showToast(`Rotated ${deg}°`, 'success');
+                };
+                newImg.src = canvas.toDataURL();
+            }, 300);
+        }
+
+        function flipImage(direction) {
+            if (!state.originalImage) return;
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.translate(direction === 'horizontal' ? tempCanvas.width : 0, direction === 'vertical' ? tempCanvas.height : 0);
+            tempCtx.scale(direction === 'horizontal' ? -1 : 1, direction === 'vertical' ? -1 : 1);
+            tempCtx.drawImage(canvas, 0, 0);
+            
+            const newImg = new Image();
+            newImg.onload = () => {
+                state.originalImage = newImg;
+                applyAdjustments();
+                saveHistory();
+                showToast(`Flipped ${direction}`, 'success');
+            };
+            newImg.src = tempCanvas.toDataURL();
+        }
+
+        function setAspect(ratio) {
+            showToast(`Aspect ratio set to ${ratio === 0 ? 'Free' : ratio.toFixed(2)}`, 'info');
+        }
+
+        function resizeImage() {
+            const w = parseInt(document.getElementById('resizeW').value);
+            const h = parseInt(document.getElementById('resizeH').value);
+            if (!w || !h || !state.originalImage) {
+                showToast('Please enter valid dimensions', 'error');
+                return;
+            }
+            showLoading(true);
+            setTimeout(() => {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = w;
+                tempCanvas.height = h;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.drawImage(state.originalImage, 0, 0, w, h);
+                
+                const newImg = new Image();
+                newImg.onload = () => {
+                    state.originalImage = newImg;
+                    canvas.width = w;
+                    canvas.height = h;
+                    applyAdjustments();
+                    saveHistory();
+                    updateInfo();
+                    showLoading(false);
+                    showToast(`Resized to ${w}x${h}`, 'success');
+                };
+                newImg.src = tempCanvas.toDataURL();
+            }, 500);
+        }
+
+        // Text
+        function setTextStyle(style) {
+            state.textStyle[style] = !state.textStyle[style];
+        }
+
+        function addText() {
+            if (!state.originalImage) {
+                showToast('Please load an image first', 'error');
+                return;
+            }
+            const text = document.getElementById('textInput').value;
+            const size = parseInt(document.getElementById('fontSize').value);
+            const color = document.getElementById('textColor').value;
+            const family = document.getElementById('fontFamily').value;
+            
+            ctx.save();
+            let fontStr = '';
+            if (state.textStyle.italic) fontStr += 'italic ';
+            if (state.textStyle.bold) fontStr += 'bold ';
+            fontStr += `${size}px ${family}`;
+            ctx.font = fontStr;
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Shadow
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+            if (state.textStyle.underline) {
+                const w = ctx.measureText(text).width;
+                ctx.fillRect(canvas.width / 2 - w / 2, canvas.height / 2 + size / 2, w, 2);
+            }
+            ctx.restore();
+            
+            saveHistory();
+            showToast('Text added!', 'success');
+        }
+
+        // Drawing
+        function setBrushColor(color) {
+            document.getElementById('brushColor').value = color;
+        }
+
+        function toggleDraw() {
+            state.drawing = !state.drawing;
+            canvas.style.cursor = state.drawing ? 'crosshair' : 'default';
+            showToast(state.drawing ? 'Drawing mode ON' : 'Drawing mode OFF', 'info');
+        }
+
+        function clearCanvas() {
+            if (!state.originalImage) return;
+            applyAdjustments();
+            saveHistory();
+            showToast('Canvas cleared', 'info');
+        }
+
+        let lastX = 0, lastY = 0;
+        canvas.addEventListener('mousedown', (e) => {
+            if (!state.drawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            lastX = (e.clientX - rect.left) * scaleX;
+            lastY = (e.clientY - rect.top) * scaleY;
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            if (!state.drawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            ctx.strokeStyle = document.getElementById('brushColor').value;
+            ctx.lineWidth = parseInt(document.getElementById('brushSize').value);
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            
+            lastX = x;
+            lastY = y;
+        });
+        canvas.addEventListener('mouseup', () => {
+            if (state.drawing) saveHistory();
+        });
+
+        // Touch support for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            if (!state.drawing) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            lastX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+            lastY = (touch.clientY - rect.top) * (canvas.height / rect.height);
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            if (!state.drawing) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
+            ctx.strokeStyle = document.getElementById('brushColor').value;
+            ctx.lineWidth = parseInt(document.getElementById('brushSize').value);
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            lastX = x; lastY = y;
+        });
+
+        // Zoom
+        function zoom(delta) {
+            state.zoom = Math.max(0.1, Math.min(3, state.zoom + delta));
+            canvas.style.transform = `scale(${state.zoom})`;
+            document.getElementById('zoomLevel').textContent = Math.round(state.zoom * 100) + '%';
+        }
+
+        function setZoom(value) {
+            state.zoom = value;
+            canvas.style.transform = `scale(${value})`;
+            document.getElementById('zoomLevel').textContent = Math.round(value * 100) + '%';
+        }
+
+        // History
+        function saveHistory() {
+            state.history = state.history.slice(0, state.historyIndex + 1);
+            state.history.push(canvas.toDataURL());
+            state.historyIndex++;
+            if (state.history.length > 30) {
+                state.history.shift();
+                state.historyIndex--;
+            }
+        }
+
+        function undo() {
+            if (state.historyIndex > 0) {
+                state.historyIndex--;
+                const img = new Image();
+                img.onload = () => {
+                    state.originalImage = img;
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    applyAdjustments();
+                };
+                img.src = state.history[state.historyIndex];
+                showToast('Undo', 'info');
+            }
+        }
+
+        function redo() {
+            if (state.historyIndex < state.history.length - 1) {
+                state.historyIndex++;
+                const img = new Image();
+                img.onload = () => {
+                    state.originalImage = img;
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    applyAdjustments();
+                };
+                img.src = state.history[state.historyIndex];
+                showToast('Redo', 'info');
+            }
+        }
+
+        function resetImage() {
+            if (!state.originalImage) return;
+            state.adjustments = { brightness: 100, contrast: 100, saturation: 100, hue: 0, blur: 0, sepia: 0, grayscale: 0, invert: 0 };
+            resetAdjustments();
+            showToast('Image reset', 'info');
+        }
+
+        // Download
+        function downloadImage() {
+            if (!state.originalImage) {
+                showToast('No image to download', 'error');
+                return;
+            }
+            const link = document.createElement('a');
+            link.download = `pixai-edited-${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            showToast('🎉 Image downloaded!', 'success');
+        }
+
+        // Tabs
+        function setActiveTool(tool) {
+            document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-tool="${tool}"]`).classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tool).classList.add('active');
+        }
+
+        // Info
+        function updateInfo() {
+            if (canvas.width) {
+                document.getElementById('imageInfo').textContent = `${canvas.width} × ${canvas.height}px`;
+            }
+        }
+
+        // Toast
+        function showToast(message, type) {
+            const colors = { success: 'from-green-500 to-emerald-500', error: 'from-red-500 to-pink-500', info: 'from-blue-500 to-purple-500' };
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-3 rounded-xl bg-gradient-to-r ${colors[type]} text-white text-sm font-medium shadow-2xl z-50`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'o') { e.preventDefault(); fileInput.click(); }
+            if (e.ctrlKey && e.key === 's') { e.preventDefault(); downloadImage(); }
+            if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
+            if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
+        });
+
+        // Auto save on changes
+        ['change', 'input'].forEach(evt => {
+            document.addEventListener(evt, (e) => {
+                if (e.target.matches('#tab-adjust input[type="range"]')) {
+                    clearTimeout(window.saveTimer);
+                    window.saveTimer = setTimeout(saveHistory, 800);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
