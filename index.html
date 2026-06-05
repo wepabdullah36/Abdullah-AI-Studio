@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Abdullah AI Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,8 +14,9 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #0a0a0f;
             color: #fff;
-            overflow: hidden;
-            height: 100vh;
+            min-height:100vh;
+            overflow-x:hidden;
+            overflow-y:auto;
         }
         
         .gradient-bg {
@@ -176,260 +177,93 @@
             transform: translateY(-1px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
-        /* ================= MOBILE RESPONSIVE ================= */
+        @media (max-width: 768px){
 
-        @media (max-width: 1024px) {
-
-            body {
-                overflow-x: hidden;
-            }
-
-            /* Main Layout */
-            .flex.flex-1.overflow-hidden {
+            .main-content{
                 flex-direction: column;
             }
 
-            /* Left Sidebar */
-            aside.w-16 {
-                width: 100%;
-                height: 70px;
-                flex-direction: row;
-                justify-content: center;
-                overflow-x: auto;
-                overflow-y: hidden;
-                padding: 10px;
-                gap: 8px;
-                border-right: none;
-                border-bottom: 1px solid rgba(255,255,255,0.1);
+            aside.w-16{
+                width:100%;
+                height:auto;
+                flex-direction:row;
+                overflow-x:auto;
+                padding:10px;
+                justify-content:center;
             }
 
-            aside.w-16 .flex-1 {
-                display: none;
+            aside.w-72{
+                width:100%;
+                max-height:300px;
             }
 
-            /* Tool Panel */
-            aside.w-72 {
-                width: 100%;
-                max-height: 250px;
-                border-right: none;
-                border-bottom: 1px solid rgba(255,255,255,0.1);
+            main{
+                width:100%;
             }
 
-            /* Canvas */
-            main {
-                width: 100%;
+            #canvas{
+                max-width:100%;
+                height:auto;
             }
 
-            #canvas {
-                max-width: 100%;
-                height: auto;
+            header{
+                flex-direction:column;
+                text-align:center;
             }
         }
 
-        /* Mobile */
-        @media (max-width: 768px) {
+        @media (max-width:425px){
 
-            header {
-                flex-direction: column;
-                gap: 10px;
-                padding: 12px;
+            aside.w-72{
+                padding:12px;
             }
 
-            header h1 {
-                font-size: 16px;
+            .grid{
+                grid-template-columns:1fr;
             }
 
-            header p {
-                font-size: 11px;
+            .btn-primary{
+                width:100%;
             }
 
-            .btn-primary {
-                font-size: 13px;
-                padding: 10px 14px;
-            }
-
-            /* Tool buttons */
-            .tool-btn {
-                min-width: 45px;
-                min-height: 45px;
-            }
-
-            /* Panels */
-            aside.w-72 {
-                max-height: 220px;
-                padding: 12px;
-            }
-
-            /* Filters Grid */
-            #tab-filters .grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            /* Crop Buttons */
-            #tab-crop .grid-cols-3 {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            /* Bottom Bar */
-            .glass.border-t {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
-                padding: 10px;
+            h1{
+                font-size:16px;
             }
         }
 
-        /* Small Mobile */
-        @media (max-width: 480px) {
+        @media (max-width:375px){
 
-            .tool-btn {
-                min-width: 40px;
-                min-height: 40px;
+            .tool-btn{
+                width:42px !important;
+                height:42px !important;
             }
 
-            #placeholder h2 {
-                font-size: 20px;
-            }
-
-            #placeholder p {
-                font-size: 13px;
-            }
-
-            .drop-zone {
-                padding: 20px;
-            }
-
-            .grid-cols-2,
-            .grid-cols-3 {
-                grid-template-columns: 1fr !important;
-            }
-
-            input,
-            select,
-            button {
-                width: 100%;
-            }
-        }
-        @media (max-width: 375px) {
-
-            header {
-                padding: 8px;
-            }
-
-            header h1 {
-                font-size: 14px;
-            }
-
-            header .gap-2 {
-                gap: 4px;
-            }
-
-            aside.w-16 {
-                height: 60px;
-                padding: 6px;
-            }
-
-            .tool-btn {
-                width: 38px !important;
-                height: 38px !important;
-                font-size: 13px;
-            }
-
-            aside.w-72 {
-                max-height: 180px;
-                padding: 10px;
-            }
-
-            .btn-primary {
-                font-size: 12px;
-                padding: 8px 10px;
-            }
-
-            #placeholder h2 {
-                font-size: 18px;
-            }
-
-            #placeholder p {
-                font-size: 12px;
-            }
-
-            .glass.border-t {
-                font-size: 11px;
+            .w-10.h-10{
+                width:32px;
+                height:32px;
             }
         }
 
-        @media (max-width: 320px) {
+        @media (max-width:320px){
 
-            header {
-                padding: 6px;
+            .tool-btn{
+                width:38px !important;
+                height:38px !important;
             }
 
-            header h1 {
-                font-size: 12px;
+            h1{
+                font-size:14px;
             }
 
-            header p {
-                display: none;
-            }
-
-            .tool-btn {
-                width: 34px !important;
-                height: 34px !important;
-                font-size: 12px;
-            }
-
-            aside.w-16 {
-                height: 55px;
-                gap: 4px;
-            }
-
-            aside.w-72 {
-                max-height: 160px;
-                padding: 8px;
-            }
-
-            .btn-primary {
-                font-size: 11px;
-                padding: 7px 8px;
-            }
-
-            #placeholder {
-                padding: 15px;
-            }
-
-            #placeholder i {
-                font-size: 40px;
-            }
-
-            #placeholder h2 {
-                font-size: 16px;
-            }
-
-            #placeholder p {
-                font-size: 11px;
-            }
-
-            .slider-container label,
-            .slider-container span {
-                font-size: 10px;
-            }
-
-            input,
-            select,
-            button {
-                font-size: 11px !important;
-            }
-
-            .glass.border-t {
-                font-size: 10px;
-                padding: 6px;
+            .text-lg{
+                font-size:1rem !important;
             }
         }
     </style>
 </head>
 <body class="h-screen flex flex-col">
     <!-- Top Bar -->
-    <header class="glass border-b border-white/10 px-4 py-3 flex items-center justify-between z-10">
+    <header class="glass border-b border-white/10 px-4 py-3 flex items-center justify-between z-10 flex-wrap gap-2">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
                 <i class="fas fa-wand-magic-sparkles text-white"></i>
@@ -458,10 +292,10 @@
     </header>
 
     <!-- Main Content -->
-    <div class="flex flex-1 overflow-hidden">
+    <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
         
         <!-- Left Sidebar - Tools -->
-        <aside class="w-16 glass border-r border-white/10 flex flex-col items-center py-4 gap-2">
+        <aside class="w-full md:w-16 glass border-r border-white/10 flex md:flex-col flex-row items-center py-4 gap-2 overflow-x-auto">
             <button onclick="setActiveTool('home')" class="tool-btn active w-12 h-12 rounded-xl flex items-center justify-center" data-tool="home" title="Home">
                 <i class="fas fa-home"></i>
             </button>
@@ -490,7 +324,7 @@
         </aside>
 
         <!-- Tool Panel -->
-        <aside class="w-72 glass border-r border-white/10 overflow-y-auto p-4">
+        <aside class="w-full md:w-72 glass border-r border-white/10 overflow-y-auto p-4">
             
             <!-- HOME Tab -->
             <div id="tab-home" class="tab-content active">
