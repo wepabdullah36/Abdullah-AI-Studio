@@ -6,6 +6,8 @@
     <title>Abdullah AI Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="Abdullah-AI-logo.png">
+    <meta name="google-site-verification" content="-DGJ1fy9QWcjzoeVPBWtQME70lU8eGFRFBHJWgLYp60" />
     <style>
         * { box-sizing: border-box; }
         body {
@@ -173,6 +175,140 @@
         .btn-primary:hover {
             transform: translateY(-1px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        /* ================= MOBILE RESPONSIVE ================= */
+
+        @media (max-width: 1024px) {
+
+            body {
+                overflow-x: hidden;
+            }
+
+            /* Main Layout */
+            .flex.flex-1.overflow-hidden {
+                flex-direction: column;
+            }
+
+            /* Left Sidebar */
+            aside.w-16 {
+                width: 100%;
+                height: 70px;
+                flex-direction: row;
+                justify-content: center;
+                overflow-x: auto;
+                overflow-y: hidden;
+                padding: 10px;
+                gap: 8px;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+
+            aside.w-16 .flex-1 {
+                display: none;
+            }
+
+            /* Tool Panel */
+            aside.w-72 {
+                width: 100%;
+                max-height: 250px;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+
+            /* Canvas */
+            main {
+                width: 100%;
+            }
+
+            #canvas {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+
+            header {
+                flex-direction: column;
+                gap: 10px;
+                padding: 12px;
+            }
+
+            header h1 {
+                font-size: 16px;
+            }
+
+            header p {
+                font-size: 11px;
+            }
+
+            .btn-primary {
+                font-size: 13px;
+                padding: 10px 14px;
+            }
+
+            /* Tool buttons */
+            .tool-btn {
+                min-width: 45px;
+                min-height: 45px;
+            }
+
+            /* Panels */
+            aside.w-72 {
+                max-height: 220px;
+                padding: 12px;
+            }
+
+            /* Filters Grid */
+            #tab-filters .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            /* Crop Buttons */
+            #tab-crop .grid-cols-3 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            /* Bottom Bar */
+            .glass.border-t {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+                padding: 10px;
+            }
+        }
+
+        /* Small Mobile */
+        @media (max-width: 480px) {
+
+            .tool-btn {
+                min-width: 40px;
+                min-height: 40px;
+            }
+
+            #placeholder h2 {
+                font-size: 20px;
+            }
+
+            #placeholder p {
+                font-size: 13px;
+            }
+
+            .drop-zone {
+                padding: 20px;
+            }
+
+            .grid-cols-2,
+            .grid-cols-3 {
+                grid-template-columns: 1fr !important;
+            }
+
+            input,
+            select,
+            button {
+                width: 100%;
+            }
         }
     </style>
 </head>
